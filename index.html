@@ -8,26 +8,32 @@
         :root {
             --neon-pink: #ff107a;
             --bg-dark: #050505;
-            --bg-warm: #1a000a; /* لون دافئ يميل للوردي الداكن جداً */
+            --bg-warm: #18000a;
         }
         
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 1.2s ease-in-out;
+            touch-action: manipulation;
         }
 
         body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: var(--bg-dark);
-            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
-            transition: background-color 1.5s ease-in-out;
-            overflow: hidden;
             position: relative;
         }
 
@@ -35,25 +41,37 @@
             background-color: var(--bg-warm);
         }
 
-        /* تنسيق النص ليتناسب مع الهواتف */
-        #text-display {
-            font-size: clamp(2rem, 6vw, 4rem);
-            font-weight: 300;
-            margin-bottom: 60px;
-            text-align: center;
-            z-index: 10;
-            color: #333;
-            transition: all 1s ease-in-out;
-            letter-spacing: 2px;
+        /* كانفاس خلفية النجوم والقلوب */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            padding: 0 20px;
+            z-index: 1;
         }
 
-        /* نبض النص وتوهجه عند التشغيل */
+        /* النص الأساسي */
+        #text-display {
+            font-size: clamp(1.8rem, 6vw, 3.2rem);
+            font-weight: 300;
+            margin-bottom: 50px;
+            text-align: center;
+            z-index: 10;
+            color: #333333;
+            transition: color 0.8s ease, font-weight 0.8s ease;
+            letter-spacing: 1.5px;
+            pointer-events: none;
+            padding: 0 25px;
+            text-shadow: none;
+        }
+
+        /* توهج ونبض النص عند التشغيل */
         body.active #text-display {
-            color: #fff;
+            color: #ffffff;
             font-weight: 600;
-            animation: textHeartbeat 2.5s infinite ease-in-out;
+            animation: textHeartbeat 2.2s infinite ease-in-out;
         }
 
         @keyframes textHeartbeat {
@@ -62,18 +80,19 @@
                 text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink); 
             }
             50% { 
-                transform: scale(1.05); 
-                text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink), 0 0 60px var(--neon-pink), 0 0 90px var(--neon-pink); 
+                transform: scale(1.04); 
+                text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink), 0 0 60px var(--neon-pink), 0 0 80px var(--neon-pink); 
             }
         }
 
-        /* زر السويتش - حجم مناسب للمس */
+        /* تصميم زر السويتش */
         .switch {
             position: relative;
             display: inline-block;
-            width: 80px;
+            width: 76px;
             height: 40px;
             z-index: 10;
+            cursor: pointer;
         }
 
         .switch input {
@@ -84,15 +103,11 @@
 
         .slider {
             position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #1a1a1a;
-            transition: .5s;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #121212;
+            transition: all 0.4s ease;
             border-radius: 40px;
-            border: 2px solid #333;
+            border: 2px solid #282828;
         }
 
         .slider:before {
@@ -102,74 +117,28 @@
             width: 30px;
             left: 3px;
             bottom: 3px;
-            background-color: #444;
-            transition: .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background-color: #3a3a3a;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-radius: 50%;
         }
 
+        /* حالة التشغيل للزر */
         input:checked + .slider {
-            background-color: transparent;
+            background-color: var(--neon-pink);
             border-color: var(--neon-pink);
-            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 15px var(--neon-pink);
+            box-shadow: 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
         }
 
         input:checked + .slider:before {
-            transform: translateX(40px);
-            background-color: #fff;
-            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-pink);
-        }
-
-        /* حاوية التساقط */
-        #falling-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            display: none;
-        }
-
-        body.active #falling-container {
-            display: block;
-        }
-        .falling-item {
-            position: absolute;
-            top: -10vh;
-            color: var(--neon-pink);
-            user-select: none;
-            animation: fall linear forwards;
-            text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink);
-        }
-
-        @keyframes fall {
-            0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
-            10% { opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translateY(110vh) rotate(360deg) scale(1.2); opacity: 0; }
-        }
-
-        /* حاوية التفاعل باللمس */
-        .burst-item {
-            position: absolute;
-            pointer-events: none;
-            color: var(--neon-pink);
-            font-size: 1.5rem;
-            text-shadow: 0 0 15px var(--neon-pink);
-            animation: burstAnim 1s ease-out forwards;
-            z-index: 5;
-        }
-
-        @keyframes burstAnim {
-            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
-            100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; }
+            transform: translateX(36px);
+            background-color: #ffffff;
+            box-shadow: 0 0 10px #ffffff;
         }
     </style>
 </head>
 <body>
 
-    <div id="falling-container"></div>
+    <canvas id="particleCanvas"></canvas>
 
     <h1 id="text-display">Mein Leben ohne dich</h1>
 
@@ -182,81 +151,144 @@
         const toggle = document.getElementById('magicToggle');
         const body = document.body;
         const textDisplay = document.getElementById('text-display');
-        const fallingContainer = document.getElementById('falling-container');
-        
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height;
+        let particles = [];
+        let animationFrameId;
         const shapes = ['★', '💖', '✦', '❤', '✨'];
-        let fallInterval;
 
-        // وظيفة إنشاء العناصر المتساقطة
-        function createFallingItem() {
-            if (!toggle.checked) return;
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-            const item = document.createElement('div');
-            item.classList.add('falling-item');
-            
-            // اختيار شكل عشوائي (نجمة أو قلب)
-            item.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
-            
-            // تخصيص عشوائي للمكان والحجم والسرعة
-            item.style.left = Math.random() * 100 + 'vw';
-            item.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
-            item.style.animationDuration = (Math.random() * 4 + 3) + 's'; // بين 3 إلى 7 ثواني (حركة هادئة)
-            
-            fallingContainer.appendChild(item);
+        // فئة إنشاء النجوم والقلوب المتساقطة والمتطايرة
+        class Particle {
+            constructor(x, y, isBurst = false) {
+                this.x = x !== undefined ? x : Math.random() * width;
+                this.y = y !== undefined ? y : -20;
+                this.char = shapes[Math.floor(Math.random() * shapes.length)];
+                this.size = Math.random() * 18 + 14;
+                this.isBurst = isBurst;
 
-            // إزالة العنصر بعد انتهاء حركته لتخفيف الضغط على الهاتف
-            setTimeout(() => {
-                item.remove();
-            }, 7000);
+                if (isBurst) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 6 + 2;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.alpha = 1;
+                    this.decay = Math.random() * 0.02 + 0.015;
+                } else {
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = Math.random() * 2 + 1.2;
+                    this.alpha = Math.random() * 0.7 + 0.3;
+                    this.rot = Math.random() * Math.PI * 2;
+                    this.rotSpeed = (Math.random() - 0.5) * 0.03;
+                }
+            }
+
+            update() {
+                if (this.isBurst) {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.alpha -= this.decay;
+                } else {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.rot += this.rotSpeed;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                
+                // توهج نيون ورورد
+                ctx.shadowColor = '#ff107a';
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = '#ff107a';
+                ctx.font = `${this.size}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                ctx.fillText(this.char, 0, 0);
+                ctx.restore();
+            }
         }
 
-        // الاستماع لتغيير حالة الزر
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            if (toggle.checked) {
+                // إضافة عناصر جديدة متساقطة استمراراً
+                if (Math.random() < 0.3) {
+                    particles.push(new Particle());
+                }
+
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const p = particles[i];
+                    p.update();
+                    p.draw();
+
+                    // حذف العناصر الخارجة عن الشاشة لتخفيف العبء
+                    if (p.isBurst && p.alpha <= 0) {
+                        particles.splice(i, 1);
+                    } else if (!p.isBurst && p.y > height + 30) {
+                        particles.splice(i, 1);
+                    }
+                }
+
+                animationFrameId = requestAnimationFrame(animate);
+            }
+        }
+
+        // الاستماع لتغيير السويتش
         toggle.addEventListener('change', function() {
-            if(this.checked) {
+            if (this.checked) {
                 body.classList.add('active');
                 textDisplay.textContent = "Mein Leben jetzt mit dir";
-                
-                // بدء تساقط النجوم والقلوب
-                fallInterval = setInterval(createFallingItem, 250);
+                particles = [];
+                // توليد دفعة أولية فورية
+                for (let i = 0; i < 25; i++) {
+                    let p = new Particle();
+                    p.y = Math.random() * height;
+                    particles.push(p);
+                }
+                animate();
             } else {
                 body.classList.remove('active');
                 textDisplay.textContent = "Mein Leben ohne dich";
-                
-                // إيقاف التساقط ومسح العناصر
-                clearInterval(fallInterval);
-                fallingContainer.innerHTML = '';
+                cancelAnimationFrame(animationFrameId);
+                ctx.clearRect(0, 0, width, height);
+                particles = [];
             }
         });
 
-        // ميزة التفاعل باللمس: انفجار النجوم والقلوب عند لمس الشاشة
-        document.addEventListener('pointerdown', function(e) {
-            if (!toggle.checked) return; // تعمل فقط إذا كان الموقع "مضاءً"
-            
-            // لا تفعل التأثير إذا كان الضغط على الزر نفسه
+        // التفاعل مع لمس الشاشة (Touch & Click)
+        function handleTouch(e) {
+            if (!toggle.checked) return;
             if (e.target.closest('.switch')) return;
 
-            const numParticles = 6; // عدد العناصر المتطايرة مع كل لمسة
-            for (let i = 0; i < numParticles; i++) {
-                const burst = document.createElement('div');
-                burst.classList.add('burst-item');
-                burst.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
-                
-                // مكان اللمس
-                burst.style.left = e.clientX + 'px';
-                burst.style.top = e.clientY + 'px';
-                // اتجاهات عشوائية للتطاير
-                const angle = Math.random() * Math.PI * 2;
-                const distance = Math.random() * 80 + 40; // مسافة التطاير
-                
-                burst.style.setProperty('--tx', ${Math.cos(angle) * distance}px);
-                burst.style.setProperty('--ty', ${Math.sin(angle) * distance}px);
-                
-                document.body.appendChild(burst);
+            let posX = e.clientX;
+            let posY = e.clientY;
 
-                // تنظيف
-                setTimeout(() => burst.remove(), 1000);
+            if (e.touches && e.touches.length > 0) {
+                posX = e.touches[0].clientX;
+                posY = e.touches[0].clientY;
             }
-        });
+
+            // إنشاء انفجار نجوم وقلوب من نقطة اللمس
+            for (let i = 0; i < 12; i++) {
+                particles.push(new Particle(posX, posY, true));
+            }
+        }
+
+        window.addEventListener('pointerdown', handleTouch);
     </script>
 </body>
 </html>
