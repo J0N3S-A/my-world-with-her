@@ -2,15 +2,20 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Für Dich</title>
     <style>
         :root {
             --neon-pink: #ff107a;
-            --bg-dark: #070707;
-            --bg-warm: #17000a;
+            --bg-dark: #050505;
+            --bg-warm: #1a000a; /* لون دافئ يميل للوردي الداكن جداً */
         }
         
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -20,40 +25,54 @@
             justify-content: center;
             align-items: center;
             background-color: var(--bg-dark);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, sans-serif;
             transition: background-color 1.5s ease-in-out;
             overflow: hidden;
-            color: #444; /* لون باهت في حالة الإطفاء */
+            position: relative;
         }
 
         body.active {
             background-color: var(--bg-warm);
         }
 
+        /* تنسيق النص ليتناسب مع الهواتف */
         #text-display {
-            font-size: 2.8rem;
+            font-size: clamp(2rem, 6vw, 4rem);
             font-weight: 300;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             text-align: center;
             z-index: 10;
-            transition: all 1.2s ease-in-out;
+            color: #333;
+            transition: all 1s ease-in-out;
             letter-spacing: 2px;
+            pointer-events: none;
+            padding: 0 20px;
         }
 
-        /* توهج النص عند التشغيل */
+        /* نبض النص وتوهجه عند التشغيل */
         body.active #text-display {
             color: #fff;
-            text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink);
             font-weight: 600;
-            transform: scale(1.05);
+            animation: textHeartbeat 2.5s infinite ease-in-out;
         }
 
-        /* تصميم زر السويتش */
+        @keyframes textHeartbeat {
+            0%, 100% { 
+                transform: scale(1); 
+                text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink), 0 0 40px var(--neon-pink); 
+            }
+            50% { 
+                transform: scale(1.05); 
+                text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink), 0 0 60px var(--neon-pink), 0 0 90px var(--neon-pink); 
+            }
+        }
+
+        /* زر السويتش - حجم مناسب للمس */
         .switch {
             position: relative;
             display: inline-block;
-            width: 70px;
-            height: 34px;
+            width: 80px;
+            height: 40px;
             z-index: 10;
         }
 
@@ -70,37 +89,38 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #222;
+            background-color: #1a1a1a;
             transition: .5s;
-            border-radius: 34px;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            border-radius: 40px;
+            border: 2px solid #333;
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
-            background-color: #555;
-            transition: .5s cubic-bezier(0.68, -0.55, 0.265, 1.55); /* حركة ديناميكية ناعمة */
+            height: 30px;
+            width: 30px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #444;
+            transition: .5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             border-radius: 50%;
         }
 
         input:checked + .slider {
-            background-color: var(--neon-pink);
-            box-shadow: 0 0 20px var(--neon-pink);
+            background-color: transparent;
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink), inset 0 0 15px var(--neon-pink);
         }
 
         input:checked + .slider:before {
-            transform: translateX(36px);
+            transform: translateX(40px);
             background-color: #fff;
-            box-shadow: 0 0 15px #fff;
+            box-shadow: 0 0 20px #fff, 0 0 40px var(--neon-pink);
         }
 
-        /* حاوية النجوم */
-        #stars-container {
+        /* حاوية التساقط */
+        #falling-container {
             position: absolute;
             top: 0;
             left: 0;
@@ -108,33 +128,48 @@
             height: 100%;
             z-index: 1;
             pointer-events: none;
-            opacity: 0;
-            transition: opacity 2s ease-in-out; /* ظهور تدريجي ناعم */
+            display: none;
         }
 
-        body.active #stars-container {
-            opacity: 1;
+        body.active #falling-container {
+            display: block;
         }
-
-        .star {
+        .falling-item {
             position: absolute;
-            background-color: var(--neon-pink);
-            border-radius: 50%;
-            box-shadow: 0 0 12px var(--neon-pink), 0 0 25px var(--neon-pink);
-            animation: twinkle linear infinite;
+            top: -10vh;
+            color: var(--neon-pink);
+            user-select: none;
+            animation: fall linear forwards;
+            text-shadow: 0 0 15px var(--neon-pink), 0 0 30px var(--neon-pink);
         }
 
-        /* وميض النجوم الانسيابي والهادئ */
-        @keyframes twinkle {
-            0% { transform: scale(0.8); opacity: 0.4; }
-            50% { transform: scale(1.3); opacity: 1; }
-            100% { transform: scale(0.8); opacity: 0.4; }
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
+            10% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(360deg) scale(1.2); opacity: 0; }
+        }
+
+        /* حاوية التفاعل باللمس */
+        .burst-item {
+            position: absolute;
+            pointer-events: none;
+            color: var(--neon-pink);
+            font-size: 1.5rem;
+            text-shadow: 0 0 15px var(--neon-pink);
+            animation: burstAnim 1s ease-out forwards;
+            z-index: 5;
+        }
+
+        @keyframes burstAnim {
+            0% { transform: translate(0, 0) scale(0.5); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
-    <div id="stars-container"></div>
+    <div id="falling-container"></div>
 
     <h1 id="text-display">Mein Leben ohne dich</h1>
 
@@ -142,47 +177,84 @@
         <input type="checkbox" id="magicToggle">
         <span class="slider"></span>
     </label>
-  
+
     <script>
         const toggle = document.getElementById('magicToggle');
         const body = document.body;
         const textDisplay = document.getElementById('text-display');
-        const starsContainer = document.getElementById('stars-container');
+        const fallingContainer = document.getElementById('falling-container');
+        
+        const shapes = ['★', '💖', '✦', '❤', '✨'];
+        let fallInterval;
 
-        // توليد النجوم برمجياً لتوزيعها بشكل عشوائي وجميل
-        const numberOfStars = 80; // عدد مناسب لملء الشاشة بدون إزعاج بصري
-        for (let i = 0; i < numberOfStars; i++) {
-            let star = document.createElement('div');
-            star.className = 'star';
+        // وظيفة إنشاء العناصر المتساقطة
+        function createFallingItem() {
+            if (!toggle.checked) return;
+
+            const item = document.createElement('div');
+            item.classList.add('falling-item');
             
-            // توزيع عشوائي للأماكن
-            let topPos = Math.random() * 100;
-            let leftPos = Math.random() * 100;
-            star.style.top = topPos + 'vh';
-            star.style.left = leftPos + 'vw';
+            // اختيار شكل عشوائي (نجمة أو قلب)
+            item.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
             
-            // أحجام متفاوتة قليلاً
-            let size = Math.random() * 3 + 2; 
-            star.style.width = size + 'px';
-            star.style.height = size + 'px';
+            // تخصيص عشوائي للمكان والحجم والسرعة
+            item.style.left = Math.random() * 100 + 'vw';
+            item.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+            item.style.animationDuration = (Math.random() * 4 + 3) + 's'; // بين 3 إلى 7 ثواني (حركة هادئة)
             
-            // توقيتات عشوائية للحركة لتبدو طبيعية وغير متزامنة (مريحة للعين)
-            star.style.animationDuration = (Math.random() * 3 + 2.5) + 's';
-            star.style.animationDelay = (Math.random() * 2) + 's';
-            
-            starsContainer.appendChild(star);
+            fallingContainer.appendChild(item);
+
+            // إزالة العنصر بعد انتهاء حركته لتخفيف الضغط على الهاتف
+            setTimeout(() => {
+                item.remove();
+            }, 7000);
         }
 
         // الاستماع لتغيير حالة الزر
         toggle.addEventListener('change', function() {
             if(this.checked) {
                 body.classList.add('active');
-                // تغيير النص مع إضافة تأثير التوهج
                 textDisplay.textContent = "Mein Leben jetzt mit dir";
+                
+                // بدء تساقط النجوم والقلوب
+                fallInterval = setInterval(createFallingItem, 250);
             } else {
                 body.classList.remove('active');
-                // العودة للحالة المظلمة
                 textDisplay.textContent = "Mein Leben ohne dich";
+                
+                // إيقاف التساقط ومسح العناصر
+                clearInterval(fallInterval);
+                fallingContainer.innerHTML = '';
+            }
+        });
+
+        // ميزة التفاعل باللمس: انفجار النجوم والقلوب عند لمس الشاشة
+        document.addEventListener('pointerdown', function(e) {
+            if (!toggle.checked) return; // تعمل فقط إذا كان الموقع "مضاءً"
+            
+            // لا تفعل التأثير إذا كان الضغط على الزر نفسه
+            if (e.target.closest('.switch')) return;
+
+            const numParticles = 6; // عدد العناصر المتطايرة مع كل لمسة
+            for (let i = 0; i < numParticles; i++) {
+                const burst = document.createElement('div');
+                burst.classList.add('burst-item');
+                burst.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
+                
+                // مكان اللمس
+                burst.style.left = e.clientX + 'px';
+                burst.style.top = e.clientY + 'px';
+                // اتجاهات عشوائية للتطاير
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 80 + 40; // مسافة التطاير
+                
+                burst.style.setProperty('--tx', ${Math.cos(angle) * distance}px);
+                burst.style.setProperty('--ty', ${Math.sin(angle) * distance}px);
+                
+                document.body.appendChild(burst);
+
+                // تنظيف
+                setTimeout(() => burst.remove(), 1000);
             }
         });
     </script>
